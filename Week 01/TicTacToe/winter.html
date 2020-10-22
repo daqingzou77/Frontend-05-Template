@@ -137,7 +137,7 @@
           let tmp = clonArr(pattern);
           tmp[i * 3 + j] = color;
           let opp = bestChoice(tmp, 3 - color);
-          if (-opp.result >= result) {
+          if (-opp.result >= result) { // 负的最大的
             point = [j, i];
             result = -opp.result;
           }

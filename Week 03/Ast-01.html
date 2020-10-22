@@ -1,0 +1,39 @@
+<!-- 编程语言 => 分词 => 语法树 => 解析，
+  构建Ast：语法分析
+  
+  包括：LL算法 LR算法
+
+  JS产生式定义加法和乘法
+
+  终结符和非终结符
+
+  EOF 标识终结 End Of File
+
+  LL语法分析：从左到右归并 -->
+
+<script>
+  const regExp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+
+  const dictionary = [
+    "Number",
+    "WhiteSpace",
+    "LineTerminator",
+    "*",
+    "/",
+    "+",
+    "-",
+  ];
+
+  function tokenize(source) {
+    let result;
+    while (true) {
+      result = regExp.exec(source);
+      if (!result) break;
+      for (let i = 1; i <= dictionary.length; i++) {
+        if (result[i]) console.log(dictionary[i - 1]);
+      }
+      console.log(result);
+    }
+  }
+  tokenize("1204 + 10 * 25");
+</script>
