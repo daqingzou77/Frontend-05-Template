@@ -1,6 +1,7 @@
 <!-- 
     AST03 考虑：匹配的长度和前进的长度不一样 
     yield 生成器
+    AST04与AST05 完善四则运算得语法分析
 -->
 
 <script>
@@ -38,8 +39,129 @@
       type: "EOF",
     };
   }
-  
-  for (let token of tokenize("1204 + 10 * 25")) {
-    console.log(token);
+
+  // 乘法语法树
+  function MultiplicativeExpression(source) {
+    if (source[0].type === "Number") {
+      let node = {
+        type: "MultiplicativeExpression",
+        children: [source[0]],
+      };
+      source[0] = node;
+      return MultiplicativeExpression(source);
+    }
+    if (
+      source[0].type === "MultiplicativeExpression" &&
+      source[1] &&
+      source[1].type === "*"
+    ) {
+      let node = {
+        type: "MultiplicativeExpression",
+        operator: "*",
+        children: [],
+      };
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      source.unshift(node);
+      return MultiplicativeExpression(source);
+    }
+    if (
+      source[0].type === "MultiplicativeExpression" &&
+      source[1] &&
+      source[1].type === "/"
+    ) {
+      let node = {
+        type: "MultiplicativeExpression",
+        operator: "/",
+        children: [],
+      };
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      source.unshift(node);
+      return MultiplicativeExpression(source);
+    }
+    if (source[0].type === "MultiplicativeExpression") return source[0];
+    return MultiplicativeExpression(source);
   }
+
+  // 加法语法树
+  function AddtiveExpression(source) {
+    if (source[0].type === "MultiplicativeExpression") {
+      let node = {
+        type: "AdditiveExpression",
+        children: [source[0]],
+      };
+      source[0] = node;
+      return AddtiveExpression(source);
+    }
+    if (
+      source[0].type === "AdditiveExpression" &&
+      source[1] &&
+      source[1].type === "+"
+    ) {
+      let node = {
+        type: "AdditiveExpression",
+        operator: "+",
+        children: [],
+      };
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      MultiplicativeExpression(source);
+      node.children.push(source.shift());
+      source.unshift(node);
+      return AddtiveExpression(source);
+    }
+    if (
+      source[0].type === "AdditiveExpression" &&
+      source[1] &&
+      source[1].type === "-"
+    ) {
+      let node = {
+        type: "AdditiveExpression",
+        operator: "-",
+        children: [],
+      };
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      MultiplicativeExpression(source);
+      node.children.push(source.shift());
+      source.unshift(node);
+      return AddtiveExpression(source);
+    }
+    if (source[0].type === "AdditiveExpression") return source[0];
+    MultiplicativeExpression(source);
+    return AddtiveExpression(source);
+  }
+
+  // 整体加上EOF
+  function Expression(tokens) {
+    if (
+      source[0].type === "AdditiveExpression" &&
+      source[1] &&
+      source[1].type === "EOF"
+    ) {
+      let node = {
+        type: "Expression",
+        children: [source.shift(), source.shift()],
+      };
+      source.unshift(node);
+      return node;
+    }
+    AddtiveExpression(source);
+    return Expression(source);
+  }
+
+  const expression = "10 * 25 - 12";
+  let source = [];
+  const tokens = tokenize(expression);
+
+  for (let token of tokens) {
+    if (token.type !== "WhiteSpace" && token.type !== "LineTerminate")
+      // 空白符号或是终止符号不加入source数组中
+      source.push(token);
+  }
+
+  console.log(Expression(tokens));
 </script>
