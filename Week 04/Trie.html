@@ -1,0 +1,45 @@
+<script>
+  const $ = Symbol("$");
+  // 构造字典树
+  class Trie {
+    constructor() {
+      this.root = Object.create(null);
+    }
+    insert(word) {
+      let node = this.root;
+      for (let c of word) {
+        if (!node[c]) node[c] = Object.create(null);
+        node = node[c];
+      }
+      if (!($ in node)) node[$] = 0;
+      node[$]++;
+    }
+    most() {
+      let max = 0;
+      let maxWord = null;
+      let visit = (node, word) => {
+        if (node[$] && node[$] > max) {
+          max = node[$];
+          maxWord = word;
+        }
+        for (let p in node) {
+          visit(node[p], word + p);
+        }
+      };
+      visit(this.root, "");
+      console.log(maxWord, max);
+    }
+  }
+  // 产生随机字符串
+  function randomWord(len) {
+    let s = "";
+    for (let i = 0; i < len; i++) {
+      s += String.fromCharCode(Math.random() * 20 + "a".charCodeAt(0));
+    }
+    return s;
+  }
+  const trie = new Trie();
+  for (let i = 0; i < 10000; i++) {
+    trie.insert(randomWord(4));
+  }
+</script>
