@@ -1,0 +1,50 @@
+<script>
+  // wildcard * 和 ? 两种通配符
+
+  // 分析 ab*cd*abc*a?d
+
+  // 思路:将Wildcard逐段转换为exec处理正则
+  function Wildcard(source, pattern) {
+    // 得出模式串中星号的个数
+    let startCount = 0;
+    for (let i = 0; i < pattern.length; i++) {
+      if (pattern[i] === "*") startCount++;
+    }
+    // 边缘情况：当前模式串中没有星号的情况，两字符串严格匹配
+    if (startCount === 0) {
+      for (let i = 0; i < pattern.length; i++) {
+        if (pattern[i] !== source[i] && pattern[i] !== "?") return false; // 当内容不匹配或是非问号时，返回失败
+      }
+      return;
+    }
+    let i = 0;
+    let lastIndex = 0;
+    for (let p = 0; p < startCount - 1; p++) {
+      i++;
+      let subPattern = "";
+      while (pattern[i] !== "*") {
+        subPattern += pattern[i]; // 第一个星号之后的模式串内容
+        i++;
+      }
+      // 将模式串中的?替换成任意字符
+      let reg = new RegExp(subPattern.replace(/\?/g, "[\\s\\S]"), "g");
+      reg.lastIndex = lastIndex; // 此处的lastIndex可以接着之前的位置继续查找
+      if (!reg.exec(source)) return false; // 正则匹配
+      lastIndex = reg.lastIndex;
+    }
+    // 匹配最后一个星号剩余的串的内容
+    for (
+      let j = 0;
+      j <= source.length - lastIndex && pattern[pattern.length - j] !== "*";
+      j++
+    ) {
+      if (
+        pattern[pattern.length - j] !== source[source.length - j] &&
+        pattern[pattern.length - j] !== "?"
+      )
+        return false;
+    }
+    return true;
+  }
+  console.log(Wildcard("abcabcabxaac", "a*b*bx*c"));
+</script>
