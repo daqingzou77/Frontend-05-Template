@@ -1,0 +1,58 @@
+<script>
+  const object = {
+    a: { b: 3 },
+    b: 2,
+  };
+
+  let reactivties = new Map();
+
+  let useReactivties = [];
+
+  let callbacks = new Map();
+
+  let po = reactive(object);
+
+  // 监听po属性，代替事件监听的机制
+  effect(() => {
+    console.log(po.a.b);
+  });
+
+  function effect(callback) {
+    useReactivties = [];
+    callback();
+    console.log(useReactivties);
+    for (let reactivity of useReactivties) {
+      if (!callbacks.has(reactivity[0])) {
+        callbacks.set(reactivity[0], new Map());
+      }
+      if (!callbacks.get(reactivity[0]).has(reactivity[1])) {
+        callbacks.get(reactivity[0]).set(reactivity[1], []);
+      }
+      callbacks.get(reactivity[0]).get(reactivity[1]).push(callback);
+    }
+  }
+
+  // 封装proxy
+  function reactive(object) {
+    // 緩存
+    if (reactivties.has(object)) return reactivties.get(object);
+    let proxy = new Proxy(object, {
+      set(obj, prop, val) {
+        obj[prop] = val;
+        if (callbacks.get(obj))
+          if (callbacks.get(obj).get(prop))
+            for (let callback of callbacks.get(obj).get(prop)) {
+              callback();
+            }
+        return obj[prop];
+      },
+      get(obj, prop) {
+        useReactivties.push([obj, prop]);
+        if (typeof obj[prop] === "object") return reactive(obj[prop]);
+        return obj[prop];
+      },
+    });
+    reactivties.set(object, proxy);
+    return proxy;
+  }
+</script>

@@ -1,0 +1,49 @@
+<script>
+  // proxy针对内置原生的操作可以有效拦截并改变原生行为
+
+  // 代理对象的行为可以被重新制定
+
+  // 对象行为的可预测性会降低，proxy是一个强大却危险的一个特性
+
+  // 一般性proxy使用，对对象进行监听或者改变它的行为
+
+  const obj = {
+    name: "daqing",
+  };
+
+  let callbacks = [];
+
+  const protyObj = new Proxy(obj, {
+    set(obj, prop, val) {
+      console.log(obj, prop, val);
+    },
+  });
+
+  // 监听po属性，代替事件监听的机制
+  effect(() => {
+    console.log(po.name);
+  });
+
+  function effect(callback) {
+    callbacks.push(callback);
+  }
+
+  // 封装proxy
+  function reactive(object) {
+    return new Proxy(object, {
+      set(obj, prop, val) {
+        obj[prop] = val;
+        for (let callback of callbacks) {
+          callback();
+        }
+        return obj[prop];
+      },
+      get(obj, prop) {
+        return obj[prop];
+      },
+    });
+  }
+
+  const po = reactive(obj);
+  po.name = "xiaoliu";
+</script>
