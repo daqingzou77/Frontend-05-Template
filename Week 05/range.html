@@ -1,0 +1,65 @@
+<div id="container">
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字
+</div>
+<div
+  class="dragEle"
+  style="display: inline-block; width: 200px; height: 200px; background: pink"
+></div>
+<script>
+  const dragEle = document.getElementsByClassName("dragEle")[0];
+  let baseX = 0,
+    baseY = 0; // 记录上一位置
+  dragEle.addEventListener("mousedown", function (event) {
+    let startX = event.clientX;
+    let startY = event.clientY;
+    let up = (e) => {
+      baseX = baseX + e.clientX - startX;
+      baseY = baseY + e.clientY - startY;
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+    };
+    let move = (e) => {
+      let range = getNearest(e.clientY, e.clientY);
+      range.insertNode(dragEle);
+      //   dragEle.style.transform = `translate(${baseX + e.clientX - startX}px, ${
+      //     baseY + e.clientY - startY
+      //   }px)`;
+    };
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+  });
+
+  let ranges = [];
+  const container = document.getElementById("container");
+  for (let i = 0; i < container.childNodes[0].textContent.length; i++) {
+    const range = document.createRange();
+    range.setStart(container.childNodes[0], i);
+    range.setEnd(container.childNodes[0], i);
+    ranges.push(range);
+  }
+
+  function getNearest(x, y) {
+    let min = Infinity;
+    let nearest = null;
+    for (let range of ranges) {
+      let rect = range.getBoundingClientRect();
+      let distance = (rect.x - x) ** 2 + (rect.y - y) ** 2;
+      if (distance < min) {
+        nearest = range;
+        min = distance;
+      }
+    }
+    return nearest;
+  }
+  document.addEventListener("selectstart", (event) => event.preventDefault());
+</script>
